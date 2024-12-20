@@ -1,0 +1,931 @@
+         Харківський національний університет радіоелектроніки
+                     Факультет комп'ютерних наук
+                     Катедра програмної інженерії
+
+
+
+
+                                 ЗВІТ
+                      до лабораторної роботи №2
+              з дисципліни «Аналіз та рефакторинг коду»
+на тему: «РОЗРОБКА БАЗИ ДАНИХ ДЛЯ СЕРВЕРНОЇ ЧАСТИНИ ПРОГРАМНОЇ
+     СИСТЕМИ ТА ПРИКЛАДНОГО ПРОГРАМНОГО ІНТЕРФЕЙСУ»
+
+
+
+
+                                                                  Виконала
+                                                          стк. гр. ПЗПІ-22-3
+                                                  Таранова Аліна Андріївна
+
+
+
+                                                                 Перевірив
+                                                  ст. викладач катедри ПІ
+                                                  Сокорчук Ігор Петрович
+
+
+
+
+                             Харків 2024
+                                                                          2
+
+                                 МЕТА РОБОТИ
+
+     Метою даної лабораторної роботи є розробка бази даних для серверної
+частини програмної системи та прикладного програмного інтерфейсу.
+
+
+                                   ХІД РОБОТИ
+
+     Проєктування та розробка серверної частини програмної системи для вивчення
+іноземних мов передбачала прийняття ряду технічних рішень, спрямованих на
+забезпечення функціональності, гнучкості, безпеки та зручності розширення
+системи.
+     У межах цієї роботи було обрано модульний підхід, що дозволяє чітко
+відокремити бізнес-логіку, доступ до бази даних і роботу з прикладним програмним
+інтерфейсом. Як основне сховище даних використано базу PostgreSQL, яка
+підтримує зв’язки між таблицями, забезпечує стабільність і ефективність зберігання.
+Управління компонентами системи реалізовано через механізм залежностей FastAPI,
+що спрощує      їх налаштування     та взаємодію.     Аутентифікація   користувачів
+здійснюється за допомогою JWT-токенів, що гарантує контроль доступу до ресурсів
+API, а також дозволяє реалізовувати різні рівні прав доступу.
+     Основним завданням роботи стало створення серверної частини з базою даних
+і API, яке забезпечує взаємодію між клієнтом і сервером. На першому етапі було
+виконано аналіз функціональних можливостей системи, результатом чого стали
+UML-діаграми для основних процесів, таких як реєстрація та вхід користувача,
+управління флеш-картками та кросвордами. Зазначені діаграми подано у додатку А.
+     Далі виконано проєктування бази даних, що передбачало побудову моделі
+«сутність — зв’язок». Вона описує структуру зв’язків між такими ключовими
+сутностями, як користувачі, флеш-картки й кросворди. Додатки Б і В містять
+відповідно діаграму зв’язків та схему бази даних із зовнішніми ключами.
+     Наступний     крок   —    розробка   специфікації   прикладного   програмного
+інтерфейсу, яка включає опис маршрутів, підтримуваних HTTP-методів і структур
+                                                                        3
+
+запитів/відповідей. У специфікації наведено маршрути для реєстрації користувачів,
+виконання    CRUD-операцій     із   флеш-картками   та   кросвордами.   Детальна
+специфікація API представлена у додатку Г.
+     Ключовим етапом стало впровадження механізмів взаємодії між серверною
+частиною, базою даних і клієнтським інтерфейсом. Для реалізації CRUD-операцій
+застосовано ORM SQLAlchemy, яка дозволяє виконувати операції додавання,
+видалення, оновлення та отримання даних із використанням об'єктів Python. Код
+операцій із базою даних наведено у додатку Д.
+     Завершальним етапом стало створення обробників для HTTP-запитів із
+використанням FastAPI, що забезпечує взаємодію клієнта з сервером. Код
+обробників маршрутів подано у додатку Е.
+     Відеозвіт із демонстрацією виконаної роботи доступний за посиланням,
+наведеним у додатку Е.
+
+
+                                    ВИСНОВКИ
+     У результаті виконання лабораторної роботи мною були розроблені діаграми
+прецедентів програмної системи. Були розроблені схеми реляційної бази даних. У
+звіті надано специфікацію прикладного програмного інтерфейсу серверної частини
+моєї програмної системи, що працює за мережевим протоколом HTTP, у форматі
+специфікації OpenAPI. Я показала, як було реалізовано взаємодію сервера з БД та
+сервера з клієнтом.
+                                                              4
+
+                       ДОДАТОК А
+
+                 UML діаграми прецедентів
+
+
+
+
+Рисунок А.1 – Діаграма прецедентів управління флеш-картками
+
+
+
+
+ Рисунок А.2 – Діаграма прецедентів управління кросвордами
+                                            5
+
+              ДОДАТОК Б
+
+      Модель «сутність — зв'язок»
+
+
+
+
+Рисунок Б.1 – Модель «сутність — зв'язок»
+                                              6
+
+               ДОДАТОК В
+
+      Діаграма структури бази даних
+
+
+
+
+Рисунок В.1 – Діаграма структури бази даних
+                                                                     7
+
+                                ДОДАТОК Г
+
+      Специфікація прикладного програмного інтерфейсу у форматі OpenAPI:
+
+     1    {
+     2      "openapi": "3.1.0",
+     3      "info": {
+     4         "title": "FastAPI",
+     5         "version": "0.1.0"
+     6      },
+     7      "paths": {
+     8         "/register/": {
+     9           "post": {
+    10             "summary": "Register User",
+    11             "operationId": "register_user_register__post",
+    12             "requestBody": {
+    13                "content": {
+    14                   "application/json": {
+    15                     "schema": {
+    16                       "$ref": "#/components/schemas/UserCreate"
+    17                     }
+    18                   }
+    19                },
+    20                "required": true
+    21             },
+    22             "responses": {
+    23                "200": {
+    24                   "description": "Successful Response",
+    25                   "content": {
+    26                     "application/json": {
+    27                       "schema": {
+    28                         "$ref": "#/components/schemas/User"
+    29                       }
+    30                     }
+    31                   }
+    32                },
+    33                "422": {
+    34                   "description": "Validation Error",
+    35                   "content": {
+    36                     "application/json": {
+    37                       "schema": {
+    38                         "$ref":
+"#/components/schemas/HTTPValidationError"
+    39                       }
+    40                     }
+    41                   }
+    42                }
+    43             }
+    44           }
+                                                                8
+    45        },
+    46        "/token/": {
+    47           "post": {
+    48             "summary": "Login",
+    49             "operationId": "login_token__post",
+    50             "requestBody": {
+    51                "content": {
+    52                   "application/x-www-form-urlencoded": {
+    53                     "schema": {
+    54                       "$ref":
+"#/components/schemas/Body_login_token__post"
+    55                     }
+    56                   }
+    57                },
+    58                "required": true
+    59             },
+    60             "responses": {
+    61                "200": {
+    62                   "description": "Successful Response",
+    63                   "content": {
+    64                     "application/json": {
+    65                       "schema": {}
+    66                     }
+    67                   }
+    68                },
+    69                "422": {
+    70                   "description": "Validation Error",
+    71                   "content": {
+    72                     "application/json": {
+    73                       "schema": {
+    74                         "$ref":
+"#/components/schemas/HTTPValidationError"
+    75                       }
+    76                     }
+    77                   }
+    78                }
+    79             }
+    80           }
+    81        },
+    82        "/flashcards/": {
+    83           "get": {
+    84             "summary": "Read Flashcards",
+    85             "operationId": "read_flashcards_flashcards__get",
+    86             "responses": {
+    87                "200": {
+    88                   "description": "Successful Response",
+    89                   "content": {
+    90                     "application/json": {
+    91                       "schema": {
+                                                                   9
+    92                         "items": {
+    93                            "$ref": "#/components/schemas/Flashcard"
+    94                         },
+    95                         "type": "array",
+    96                         "title": "Response Read Flashcards
+Flashcards Get"
+    97                       }
+    98                     }
+    99                   }
+   100                }
+   101             },
+   102             "security": [
+   103                {
+   104                   "OAuth2PasswordBearer": []
+   105                }
+   106             ]
+   107          },
+   108          "post": {
+   109             "summary": "Create Flashcard",
+   110             "operationId": "create_flashcard_flashcards__post",
+   111             "requestBody": {
+   112                "content": {
+   113                   "application/json": {
+   114                     "schema": {
+   115                       "$ref":
+"#/components/schemas/FlashcardCreate"
+   116                     }
+   117                   }
+   118                },
+   119                "required": true
+   120             },
+   121             "responses": {
+   122                "200": {
+   123                   "description": "Successful Response",
+   124                   "content": {
+   125                     "application/json": {
+   126                       "schema": {
+   127                         "$ref": "#/components/schemas/Flashcard"
+   128                       }
+   129                     }
+   130                   }
+   131                },
+   132                "422": {
+   133                   "description": "Validation Error",
+   134                   "content": {
+   135                     "application/json": {
+   136                       "schema": {
+   137                         "$ref":
+"#/components/schemas/HTTPValidationError"
+                                                                    10
+   138                       }
+   139                     }
+   140                   }
+   141                 }
+   142              },
+   143              "security": [
+   144                 {
+   145                   "OAuth2PasswordBearer": []
+   146                 }
+   147              ]
+   148           }
+   149        },
+   150        "/crosswords/": {
+   151           "get": {
+   152              "summary": "Read Crosswords",
+   153              "operationId": "read_crosswords_crosswords__get",
+   154              "responses": {
+   155                 "200": {
+   156                   "description": "Successful Response",
+   157                   "content": {
+   158                     "application/json": {
+   159                       "schema": {
+   160                          "items": {
+   161                             "$ref": "#/components/schemas/Crossword"
+   162                          },
+   163                          "type": "array",
+   164                          "title": "Response Read Crosswords
+Crosswords Get"
+   165                       }
+   166                     }
+   167                   }
+   168                 }
+   169              },
+   170              "security": [
+   171                 {
+   172                   "OAuth2PasswordBearer": []
+   173                 }
+   174              ]
+   175           },
+   176           "post": {
+   177              "summary": "Create Crossword",
+   178              "operationId": "create_crossword_crosswords__post",
+   179              "requestBody": {
+   180                 "content": {
+   181                   "application/json": {
+   182                     "schema": {
+   183                       "$ref":
+"#/components/schemas/CrosswordCreate"
+   184                     }
+                                                                  11
+   185                   }
+   186                },
+   187                "required": true
+   188             },
+   189             "responses": {
+   190                "200": {
+   191                   "description": "Successful Response",
+   192                   "content": {
+   193                     "application/json": {
+   194                       "schema": {
+   195                         "$ref": "#/components/schemas/Crossword"
+   196                       }
+   197                     }
+   198                   }
+   199                },
+   200                "422": {
+   201                   "description": "Validation Error",
+   202                   "content": {
+   203                     "application/json": {
+   204                       "schema": {
+   205                         "$ref":
+"#/components/schemas/HTTPValidationError"
+   206                       }
+   207                     }
+   208                   }
+   209                }
+   210             },
+   211             "security": [
+   212                {
+   213                   "OAuth2PasswordBearer": []
+   214                }
+   215             ]
+   216           }
+   217        },
+   218        "/protected/": {
+   219           "get": {
+   220             "summary": "Protected Route",
+   221             "operationId": "protected_route_protected__get",
+   222             "responses": {
+   223                "200": {
+   224                   "description": "Successful Response",
+   225                   "content": {
+   226                     "application/json": {
+   227                       "schema": {}
+   228                     }
+   229                   }
+   230                }
+   231             },
+   232             "security": [
+                                                     12
+233                 {
+234                     "OAuth2PasswordBearer": []
+235                 }
+236             ]
+237         }
+238     }
+239   },
+240   "components": {
+241      "schemas": {
+242        "Body_login_token__post": {
+243          "properties": {
+244            "grant_type": {
+245               "anyOf": [
+246                  {
+247                     "type": "string",
+248                     "pattern": "password"
+249                  },
+250                  {
+251                     "type": "null"
+252                  }
+253               ],
+254               "title": "Grant Type"
+255            },
+256            "username": {
+257               "type": "string",
+258               "title": "Username"
+259            },
+260            "password": {
+261               "type": "string",
+262               "title": "Password"
+263            },
+264            "scope": {
+265               "type": "string",
+266               "title": "Scope",
+267               "default": ""
+268            },
+269            "client_id": {
+270               "anyOf": [
+271                  {
+272                     "type": "string"
+273                  },
+274                  {
+275                     "type": "null"
+276                  }
+277               ],
+278               "title": "Client Id"
+279            },
+280            "client_secret": {
+281               "anyOf": [
+                                             13
+282             {
+283                  "type": "string"
+284             },
+285             {
+286                  "type": "null"
+287             }
+288           ],
+289           "title": "Client Secret"
+290       }
+291     },
+292     "type": "object",
+293     "required": [
+294        "username",
+295        "password"
+296     ],
+297     "title": "Body_login_token__post"
+298   },
+299   "Crossword": {
+300      "properties": {
+301        "title": {
+302           "type": "string",
+303           "title": "Title"
+304        },
+305        "grid": {
+306           "items": {
+307              "items": {
+308                 "type": "string"
+309              },
+310              "type": "array"
+311           },
+312           "type": "array",
+313           "title": "Grid"
+314        },
+315        "clues": {
+316           "additionalProperties": {
+317              "additionalProperties": {
+318                 "type": "string"
+319              },
+320              "type": "object"
+321           },
+322           "type": "object",
+323           "title": "Clues"
+324        },
+325        "id": {
+326           "type": "integer",
+327           "title": "Id"
+328        },
+329        "owner_id": {
+330           "type": "integer",
+                                              14
+331         "title": "Owner Id"
+332        }
+333     },
+334     "type": "object",
+335     "required": [
+336        "title",
+337        "grid",
+338        "clues",
+339        "id",
+340        "owner_id"
+341     ],
+342     "title": "Crossword"
+343   },
+344   "CrosswordCreate": {
+345      "properties": {
+346         "title": {
+347            "type": "string",
+348            "title": "Title"
+349         },
+350         "grid": {
+351            "items": {
+352               "items": {
+353                  "type": "string"
+354               },
+355               "type": "array"
+356            },
+357            "type": "array",
+358            "title": "Grid"
+359         },
+360         "clues": {
+361            "additionalProperties": {
+362               "additionalProperties": {
+363                  "type": "string"
+364               },
+365               "type": "object"
+366            },
+367            "type": "object",
+368            "title": "Clues"
+369         }
+370      },
+371      "type": "object",
+372      "required": [
+373         "title",
+374         "grid",
+375         "clues"
+376      ],
+377      "title": "CrosswordCreate"
+378   },
+379   "Flashcard": {
+                                       15
+380   "properties": {
+381     "word": {
+382        "type": "string",
+383        "title": "Word"
+384     },
+385     "translation": {
+386        "type": "string",
+387        "title": "Translation"
+388     },
+389     "definition": {
+390        "anyOf": [
+391           {
+392              "type": "string"
+393           },
+394           {
+395              "type": "null"
+396           }
+397        ],
+398        "title": "Definition"
+399     },
+400     "examples": {
+401        "anyOf": [
+402           {
+403              "items": {
+404                 "type": "string"
+405              },
+406              "type": "array"
+407           },
+408           {
+409              "type": "null"
+410           }
+411        ],
+412        "title": "Examples"
+413     },
+414     "tags": {
+415        "anyOf": [
+416           {
+417              "items": {
+418                 "type": "string"
+419              },
+420              "type": "array"
+421           },
+422           {
+423              "type": "null"
+424           }
+425        ],
+426        "title": "Tags"
+427     },
+428     "id": {
+                                          16
+429          "type": "integer",
+430          "title": "Id"
+431       },
+432       "owner_id": {
+433          "type": "integer",
+434          "title": "Owner Id"
+435       }
+436     },
+437     "type": "object",
+438     "required": [
+439        "word",
+440        "translation",
+441        "id",
+442        "owner_id"
+443     ],
+444     "title": "Flashcard"
+445   },
+446   "FlashcardCreate": {
+447      "properties": {
+448        "word": {
+449           "type": "string",
+450           "title": "Word"
+451        },
+452        "translation": {
+453           "type": "string",
+454           "title": "Translation"
+455        },
+456        "definition": {
+457           "anyOf": [
+458              {
+459                 "type": "string"
+460              },
+461              {
+462                 "type": "null"
+463              }
+464           ],
+465           "title": "Definition"
+466        },
+467        "examples": {
+468           "anyOf": [
+469              {
+470                 "items": {
+471                    "type": "string"
+472                 },
+473                 "type": "array"
+474              },
+475              {
+476                 "type": "null"
+477              }
+                                                        17
+478         ],
+479         "title": "Examples"
+480       },
+481       "tags": {
+482          "anyOf": [
+483             {
+484                "items": {
+485                   "type": "string"
+486                },
+487                "type": "array"
+488             },
+489             {
+490                "type": "null"
+491             }
+492          ],
+493          "title": "Tags"
+494       }
+495     },
+496     "type": "object",
+497     "required": [
+498        "word",
+499        "translation"
+500     ],
+501     "title": "FlashcardCreate"
+502   },
+503   "HTTPValidationError": {
+504      "properties": {
+505         "detail": {
+506            "items": {
+507               "$ref": "#/components/schemas/ValidationError"
+508            },
+509            "type": "array",
+510            "title": "Detail"
+511         }
+512      },
+513      "type": "object",
+514      "title": "HTTPValidationError"
+515   },
+516   "User": {
+517      "properties": {
+518         "username": {
+519            "type": "string",
+520            "title": "Username"
+521         },
+522         "id": {
+523            "type": "integer",
+524            "title": "Id"
+525         }
+526      },
+                                           18
+527     "type": "object",
+528     "required": [
+529        "username",
+530        "id"
+531     ],
+532     "title": "User"
+533   },
+534   "UserCreate": {
+535      "properties": {
+536         "username": {
+537            "type": "string",
+538            "title": "Username"
+539         },
+540         "password": {
+541            "type": "string",
+542            "title": "Password"
+543         }
+544      },
+545      "type": "object",
+546      "required": [
+547         "username",
+548         "password"
+549      ],
+550      "title": "UserCreate"
+551   },
+552   "ValidationError": {
+553      "properties": {
+554         "loc": {
+555            "items": {
+556               "anyOf": [
+557                 {
+558                    "type": "string"
+559                 },
+560                 {
+561                    "type": "integer"
+562                 }
+563               ]
+564            },
+565            "type": "array",
+566            "title": "Location"
+567         },
+568         "msg": {
+569            "type": "string",
+570            "title": "Message"
+571         },
+572         "type": {
+573            "type": "string",
+574            "title": "Error Type"
+575         }
+                                                 19
+576                 },
+577                 "type": "object",
+578                 "required": [
+579                    "loc",
+580                    "msg",
+581                    "type"
+582                 ],
+583                 "title": "ValidationError"
+584             }
+585           },
+586           "securitySchemes": {
+587              "OAuth2PasswordBearer": {
+588                "type": "oauth2",
+589                "flows": {
+590                  "password": {
+591                    "scopes": {},
+592                    "tokenUrl": "token"
+593                  }
+594                }
+595              }
+596           }
+597       }
+598   }
+                                                                        20
+
+                                  ДОДАТОК Д
+
+     Код взаємодії між сервером, клієнтом та базою даних.
+     Реалізація взаємодії сервера з базою даних. Модуль database.py відповідає за
+підключення до Postgres БД за допомогою SQLalchemy ORM, а також за виділення
+локальних сесій для ORM:
+
+     1 from sqlalchemy import create_engine
+     2 from sqlalchemy.ext.declarative import declarative_base
+     3 from sqlalchemy.orm import sessionmaker
+     4 import os
+     5 from dotenv import load_dotenv
+     6
+     7 load_dotenv()
+     8
+     9 DATABASE_URL = os.getenv("DATABASE_URL", "")
+    10 engine = create_engine(DATABASE_URL)
+    11 SessionLocal = sessionmaker(autocommit=False, autoflush=False,
+bind=engine)
+    12 Base = declarative_base()
+    13
+    14 def get_db():
+    15       db = SessionLocal()
+    16       try:
+    17            yield db
+    18       finally:
+    19            db.close()
+
+Модуль crud.py реалізовує потрібні CRUD-операції над сутностями на рівні БД через
+ORM:
+
+     1 from sqlalchemy.orm import Session
+     2 from app import models, schemas
+     3 from passlib.context import CryptContext
+     4
+     5 pwd_context = CryptContext(schemes=["bcrypt"],
+deprecated="auto")
+     6
+     7
+     8 def get_user_by_username(db: Session, username: str):
+     9      return db.query(models.User).filter(models.User.username ==
+username).first()
+    10
+    11
+    12 def create_user(db: Session, user: schemas.UserCreate):
+                                                                       21
+    13      hashed_password = pwd_context.hash(user.password)
+    14      db_user = models.User(username=user.username,
+hashed_password=hashed_password)
+    15      db.add(db_user)
+    16      db.commit()
+    17      db.refresh(db_user)
+    18      return db_user
+    19
+    20
+    21 def create_flashcard(db: Session, flashcard:
+schemas.FlashcardCreate, user_id: int):
+    22      db_flashcard = models.Flashcard(**flashcard.dict(),
+owner_id=user_id)
+    23      db.add(db_flashcard)
+    24      db.commit()
+    25      db.refresh(db_flashcard)
+    26      return db_flashcard
+    27
+    28
+    29 def get_flashcards(db: Session, user_id: int):
+    30      return
+db.query(models.Flashcard).filter(models.Flashcard.owner_id ==
+user_id).all()
+    31
+    32
+    33 def create_crossword(db: Session, crossword:
+schemas.CrosswordCreate, user_id: int):
+    34      db_crossword = models.Crossword(**crossword.dict(),
+owner_id=user_id)
+    35      db.add(db_crossword)
+    36      db.commit()
+    37      db.refresh(db_crossword)
+    38      return db_crossword
+    39
+    40
+    41 def get_crosswords(db: Session, user_id: int):
+    42      return
+db.query(models.Crossword).filter(models.Crossword.owner_id ==
+user_id).all()
+
+
+     Реалізація взаємодії клієнта з HTTP інтерфейсом сервера за допомогою веб-
+фрейморка FastAPI. Файл main.py реалізує логіку реєстрації та JWT-автентифікації
+користувача, а також, усі інші кінцеві точки HTTP сервера, використовуючи зручну
+бібліотеку Pydantic для валідації вхідного тіла JSON та коректних, центрально
+керованих відповідей у форматі   JSON для клієнта. Pydantic надає надвзичайно
+                                                                       22
+
+зручну модель серіалізації/десеріалізації   JSON, що реалізується в мові Python
+через механізм спадкування класів та їх атрибутів:
+
+     1 from fastapi import FastAPI, Depends, HTTPException, status
+     2 from fastapi.security import OAuth2PasswordRequestForm
+     3 from sqlalchemy.orm import Session
+     4 from app import models, schemas, crud, database
+     5 from app.auth import authenticate_user, create_access_token,
+get_current_user
+     6
+     7 app = FastAPI()
+     8
+     9 models.Base.metadata.create_all(bind=database.engine)
+    10
+    11
+    12 @app.post("/register/", response_model=schemas.User)
+    13 def register_user(user: schemas.UserCreate, db: Session =
+Depends(database.get_db)):
+    14      db_user = crud.get_user_by_username(db,
+username=user.username)
+    15      if db_user:
+    16           raise HTTPException(
+    17               status_code=status.HTTP_400_BAD_REQUEST,
+    18               detail="Username already registered"
+    19           )
+    20      return crud.create_user(db=db, user=user)
+    21
+    22
+    23 @app.post("/token/")
+    24 def login(form_data: OAuth2PasswordRequestForm = Depends(), db:
+Session = Depends(database.get_db)):
+    25      user = authenticate_user(db, form_data.username,
+form_data.password)
+    26      if not user:
+    27           raise HTTPException(
+    28               status_code=status.HTTP_401_UNAUTHORIZED,
+    29               detail="Incorrect username or password",
+    30               headers={"WWW-Authenticate": "Bearer"},
+    31           )
+    32      access_token = create_access_token(data={"sub":
+user.username})
+    33      return {"access_token": access_token, "token_type":
+"bearer"}
+    34
+    35
+    36 @app.post("/flashcards/", response_model=schemas.Flashcard)
+    37 def create_flashcard(
+    38      flashcard: schemas.FlashcardCreate,
+                                                               23
+    39      db: Session = Depends(database.get_db),
+    40      current_user: schemas.User = Depends(get_current_user)
+    41 ):
+    42      return crud.create_flashcard(db=db, flashcard=flashcard,
+user_id=current_user.id)
+    43
+    44
+    45 @app.get("/flashcards/",
+response_model=list[schemas.Flashcard])
+    46 def read_flashcards(
+    47      db: Session = Depends(database.get_db),
+    48      current_user: schemas.User = Depends(get_current_user)
+    49 ):
+    50      return crud.get_flashcards(db=db, user_id=current_user.id)
+    51
+    52
+    53 @app.post("/crosswords/", response_model=schemas.Crossword)
+    54 def create_crossword(
+    55      crossword: schemas.CrosswordCreate,
+    56      db: Session = Depends(database.get_db),
+    57      current_user: schemas.User = Depends(get_current_user)
+    58 ):
+    59      return crud.create_crossword(db=db, crossword=crossword,
+user_id=current_user.id)
+    60
+    61
+    62 @app.get("/crosswords/",
+response_model=list[schemas.Crossword])
+    63 def read_crosswords(
+    64      db: Session = Depends(database.get_db),
+    65      current_user: schemas.User = Depends(get_current_user)
+    66 ):
+    67      return crud.get_crosswords(db=db, user_id=current_user.id)
+                                                  24
+
+                             ДОДАТОК Е
+
+                         Посилання на відеозвіт
+Посилання: https://youtu.be/eJoV2qsxipk
