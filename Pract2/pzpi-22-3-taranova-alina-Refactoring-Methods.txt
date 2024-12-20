@@ -1,0 +1,153 @@
+Харківський Національний Університет Радіоелектроніки
+
+            Кафедра Програмної Інженерії
+
+
+
+
+                Практичне завдання №2
+ Методи рефакторингу коду програмного забезпечення
+
+
+
+
+                           Виконала: студентка групи ПЗПІ-22-3
+
+                                     Таранова Аліна Андріївна
+
+
+
+                             Прийняв: Сокорчук Ігор Петрович
+
+
+
+
+                     Харків 2024
+Мета завдання:
+     Продемонструвати, як за допомогою методів рефакторингу можна
+покращити якість коду без зміни його функціональності.
+Методи рефакторингу:
+   1. Виділення методу (Extract Method).
+   2. Перейменування змінної або методу (Rename Variable/Method).
+   3. Заміна умовної логіки поліморфізмом (Replace Conditional with
+      Polymorphism).
+
+
+Метод 1: Виділення методу (Extract Method)
+Опис методу:
+Виділення фрагментів коду в окремі методи покращує читабельність,
+дозволяє уникнути дублювання та полегшує тестування.
+Код до рефакторингу:
+def calculate_total(order):
+  total = 0
+  for item in order:
+       total += item['price'] * item['quantity']
+  discount = total * 0.1 if total > 100 else 0
+  total -= discount
+  tax = total * 0.2
+  return total + tax
+Проблеми:
+       Метод занадто довгий.
+       Кожен фрагмент виконує окреме завдання (підсумок, знижка, податок),
+        але все об’єднано в одному методі.
+       Важко протестувати окремі частини.
+Код після рефакторингу:
+def calculate_total(order):
+  subtotal = calculate_subtotal(order)
+  discount = calculate_discount(subtotal)
+  total = subtotal - discount
+  tax = calculate_tax(total)
+  return total + tax
+
+
+def calculate_subtotal(order):
+  return sum(item['price'] * item['quantity'] for item in order)
+
+
+def calculate_discount(subtotal):
+  return subtotal * 0.1 if subtotal > 100 else 0
+
+
+def calculate_tax(total):
+  return total * 0.2
+Покращення:
+      Код став зрозумілішим: кожен метод відповідає лише за одну задачу.
+      Легко тестувати окремі частини (наприклад, calculate_discount або
+       calculate_tax).
+      Загальний метод calculate_total став компактнішим і зручнішим для
+       читання.
+
+
+Метод 2: Перейменування змінної або методу (Rename Variable/Method)
+Опис методу:
+Зміна імен змінних і методів допомагає зробити код самодокументованим,
+покращуючи його читабельність.
+Код до рефакторингу:
+def calc(s, t):
+  res = s * t
+  return res
+Проблеми:
+      Імена змінних та методу неінформативні.
+       Інший розробник не розуміє, що робить код.
+Код після рефакторингу:
+def calculate_area(width, height):
+  area = width * height
+  return area
+Покращення:
+       Імена відображають сутність методів і змінних.
+       Код легко зрозуміти без додаткових коментарів.
+
+
+Метод 3: Заміна умовної логіки поліморфізмом (Replace Conditional with
+Polymorphism)
+Опис методу:
+Цей метод замінює складні умовні конструкції класами, які використовують
+спадкування.
+Код до рефакторингу:
+def get_payment(employee):
+  if employee['type'] == 'manager':
+       return employee['salary'] + 500
+  elif employee['type'] == 'developer':
+       return employee['salary'] + 200
+  else:
+       return employee['salary']
+Проблеми:
+       Складна умовна конструкція з багатьма if-elif.
+       Важко додати новий тип працівника без модифікації основного методу.
+Код після рефакторингу:
+class Employee:
+  def __init__(self, salary):
+       self.salary = salary
+  def get_payment(self):
+      return self.salary
+
+
+class Manager(Employee):
+  def get_payment(self):
+      return self.salary + 500
+
+
+class Developer(Employee):
+  def get_payment(self):
+      return self.salary + 200
+
+
+# Використання
+employee = Manager(3000)
+print(employee.get_payment()) # 3500
+Покращення:
+      Логіка стала гнучкішою: нові типи працівників легко додати,
+       створивши новий клас.
+      Код відповідає принципу відкритості/закритості (Open/Closed
+       Principle).
+      Зменшена кількість умовних операторів.
+Висновок:
+Застосування методів рефакторингу дозволило:
+  1. Покращити читабельність і зрозумілість коду.
+  2. Зменшити дублювання логіки.
+  3. Полегшити тестування та підтримку коду.
+         Додаток А
+ Посилання на відео запис
+https://youtu.be/dB3KNLjRh-Y
+    Додаток В
+Слайди презентації
