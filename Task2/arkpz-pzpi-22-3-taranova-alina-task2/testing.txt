@@ -1,0 +1,44 @@
+curl -X POST "http://127.0.0.1:8000/register/" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "testuser", "password": "testpassword"}'
+
+curl -X POST "http://127.0.0.1:8000/token/" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=testuser&password=testpassword"
+
+curl -X POST "http://127.0.0.1:8000/flashcards/" \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxNzM0NzMxOTI4fQ.37S7mgmlvyrf8e8ORDGZVER9WOuOlK_vp7ozQb9r1Kk" \
+     -H "Content-Type: application/json" \
+     -d '{"word": "World", "translation": "світ", "definition": "where are we live", "examples": ["Hello, world!"], "tags": ["world"]}'
+
+curl -X GET "http://127.0.0.1:8000/flashcards/" \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxNzM0NzMxOTI4fQ.37S7mgmlvyrf8e8ORDGZVER9WOuOlK_vp7ozQb9r1Kk"
+
+curl -X POST "http://127.0.0.1:8000/crosswords/" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxNzM0NzMxOTI4fQ.37S7mgmlvyrf8e8ORDGZVER9WOuOlK_vp7ozQb9r1Kk" \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "Basic English Words",
+  "grid": [
+    ["H", "E", "L", "L", "O"],
+    ["-", "-", "-", "-", "-"],
+    ["W", "O", "R", "L", "D"],
+    ["-", "-", "-", "-", "-"],
+    ["G", "R", "E", "A", "T"]
+  ],
+  "clues": {
+    "across": {
+      "1": "A greeting word",
+      "3": "The Earth or another planet",
+      "5": "Something positive or excellent"
+    },
+    "down": {
+      "1": "Opposite of goodbye",
+      "2": "Circular object",
+      "4": "Synonym of 'big'"
+    }
+  }
+}'
+
+curl -X GET "http://127.0.0.1:8000/crosswords/" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxNzM0NzMxOTI4fQ.37S7mgmlvyrf8e8ORDGZVER9WOuOlK_vp7ozQb9r1Kk"
