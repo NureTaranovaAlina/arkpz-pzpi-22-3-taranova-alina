@@ -1,0 +1,264 @@
+        Харківський національний університет радіоелектроніки
+                    Факультет комп'ютерних наук
+                    Катедра програмної інженерії
+
+
+
+
+                                ЗВІТ
+                     до лабораторної роботи №3
+             з дисципліни «Аналіз та рефакторинг коду»
+на тему: «РОЗРОБКА БІЗНЕС-ЛОГІКИ ТА ФУНКЦІЙ АДМІНІСТРУВАННЯ
+         СЕРВЕРНОЇ ЧАСТИНИ ПРОГРАМНОЇ СИСТЕМИ»
+
+
+
+
+                                                                Виконала
+                                                        стк. гр. ПЗПІ-22-3
+                                               Таранова Аліна Андріївна
+
+
+
+                                                              Перевірив
+                                                 ст. викладач кафедри ПІ
+                                                 Сокорчук Ігор Петрович
+
+
+
+
+                            Харків 2025
+                                                                        2
+
+                                МЕТА РОБОТИ
+     Метою даної лабораторної роботи є розробка бізнес-логіки та функцій
+адміністрування серверної частини.
+
+
+                                  ХІД РОБОТИ
+     Під час виконання роботи було створено UML-діаграми діяльності, які
+відображають бізнес-логіку та функції адміністрування серверної частини. Завдяки
+цим діаграмам вдалося детально описати послідовність дій, що виконує система, а
+також взаємодію користувачів із функціоналом серверної частини. Для опису
+функцій серверної частини була також створена діаграма взаємодії.
+     UML-діаграми діяльності та взаємодії для серверної частини представлені у
+додатку А.
+     Під час реалізації було впроваджено бізнес-логіку, пов’язану з реалізацією
+методу інтервального навчання іноземних мов, що дозволило вирішувати задачі
+прогнозування та аналізу даних. Цей метод забезпечив можливість клієнтських
+застосунків у реалізації системи нагадувань, а також розробки подальшої бізнес-
+логіки, що залежить саме від даних, що отримують через цей педагогічний метод.
+     Крім того, були розроблені функції адміністрування серверної частини, які
+дозволяють адміністраторам здійснювати копіювання та відновлення бази даних. Ці
+функції є ключовими для забезпечення безпеки й цілісності даних, а також для
+зниження ризику втрати інформації. Вони підтримують резервне копіювання, що
+підвищує надійність системи й стійкість до можливих збоїв.
+     Код реалізації цих функцій наведений у додатку Б.
+     Відеозвіт із демонстрацією виконаної роботи доступний за посиланням,
+вказаним у додатку В.
+                                                                        3
+
+                                  ВИСНОВКИ
+     У ході виконання лабораторної роботи було розроблено діаграми діяльності та
+взаємодії для серверної частини програмної системи. Реалізовано код бізнес-логіки
+та функцій адміністрування серверної частини.
+                                                                      4
+
+                               ДОДАТОК А
+         UML діаграми діяльності та взаємодії для серверної частини
+
+
+
+
+Рисунок А.1 – Діаграма діяльності функції адміністратора: резервне копіювання
+                                                                    5
+
+
+
+
+Рисунок А.2 - Діаграма діяльності функції адміністратора: відновлення БД
+                                                                        6
+
+
+
+
+Рисунок А.3 – Діаграма діяльності бізнес-логіки: алгоритм інтервального навчання
+                                                          7
+
+                        ДОДАТОК Б
+         Код функцій бізнес-логіки та адміністрування
+
+70   from datetime import timedelta
+71   from app.models import User, UserTopicGrade
+72
+73   def get_repetition_schedule(db: Session, user_id: int):
+74       user = db.query(User).filter(User.id ==
+     user_id).first()
+75      if not user:
+76             raise ValueError(f"User with ID {user_id} not
+     found")
+77
+78      schedule = {}
+79      one_week = timedelta(days=7)
+80      today = datetime.now().date()
+81
+82      for topic in user.topics:
+83             last_grade = (
+84                 db.query(UserTopicGrade)
+85               .filter(UserTopicGrade.user_id == user_id,
+     UserTopicGrade.topic_id == topic.id)
+86                 .order_by(UserTopicGrade.at.desc())
+87                 .first()
+88             )
+89
+90             if last_grade:
+91               next_review_date = (last_grade.at +
+     one_week).date()
+92             else:
+93                 next_review_date = today
+94
+95             if next_review_date >= today:
+96                 schedule[topic.id] =
+                                                             8
+      next_review_date.strftime("%Y-%m-%d")
+97
+98         return schedule
+
+
+124   @app.get("/schedule/")
+125   def repetition_schedule(
+126        db: Session = Depends(database.get_db),
+127        current_user = Depends(get_current_user)
+128   ):
+129        try:
+130           schedule = service_crud.get_repetition_schedule(db,
+      current_user.id)
+131           return {"user_id": current_user.id, "schedule":
+      schedule}
+132        except ValueError as e:
+133               raise HTTPException(status_code=404, detail=str(e))
+134
+135   import subprocess
+136   from datetime import datetime
+137   from fastapi import APIRouter, HTTPException
+138
+139   admin_router = APIRouter(prefix="/admin", tags=["Admin"])
+140
+141   BACKUP_DIR = "backups"
+142
+143   os.makedirs(BACKUP_DIR, exist_ok=True)
+144
+145   @admin_router.post("/backup/")
+146   def create_backup(
+147        current_user: models.User = Depends(get_current_user)
+148   ):
+149
+150        if(not current_user.is_admin): # type: ignore
+151               return {"message": "not authorized"}
+                                                           9
+152
+153      os.makedirs(BACKUP_DIR, exist_ok=True)
+154
+155       timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-
+      %S")
+156       backup_file = os.path.join(BACKUP_DIR,
+      f"backup_{timestamp}.sql")
+157
+158      db_name = os.getenv("POSTGRES_DB", "mydatabase")
+159      db_user = os.getenv("POSTGRES_USER", "postgres")
+160       db_password = os.getenv("POSTGRES_PASSWORD",
+      "password")
+161      db_host = os.getenv("POSTGRES_HOST", "localhost")
+162      db_port = os.getenv("POSTGRES_PORT", "5432")
+163
+164      os.environ["PGPASSWORD"] = db_password
+165
+166      dump_command = [
+167             "pg_dump",
+168             "-h", db_host,
+169             "-p", db_port,
+170             "-U", db_user,
+171             "-F", "c",
+172             "-f", backup_file,
+173             db_name
+174      ]
+175
+176      try:
+177             subprocess.run(dump_command, check=True)
+178           return {"message": "Backup created successfully",
+      "backup_path": backup_file}
+179      except subprocess.CalledProcessError as e:
+180           raise HTTPException(status_code=500, detail=f"Error
+      during backup: {str(e)}")
+181
+                                                           10
+182   @admin_router.post("/restore/")
+183   def restore_backup(
+184        backup_name: str,
+185        current_user: models.User = Depends(get_current_user)
+186   ):
+187
+188        if(not current_user.is_admin): # type: ignore
+189            return {"message": "not authorized"}
+190
+191        backup_file = os.path.join(BACKUP_DIR, backup_name)
+192
+193        if not os.path.exists(backup_file):
+194           raise HTTPException(status_code=404, detail="Backup
+      file not found")
+195
+196        db_name = os.getenv("POSTGRES_DB", "mydatabase")
+197        db_user = os.getenv("POSTGRES_USER", "postgres")
+198       db_password = os.getenv("POSTGRES_PASSWORD",
+      "password")
+199        db_host = os.getenv("POSTGRES_HOST", "localhost")
+200        db_port = os.getenv("POSTGRES_PORT", "5432")
+201
+202       print(f"Database parameters: host={db_host},
+      port={db_port}, user={db_user}, db={db_name}")
+203        print(f"Backup file: {backup_file}")
+204
+205        env = os.environ.copy()
+206        env["PGPASSWORD"] = db_password
+207        print(f"Environment variables: {env}")
+208
+209        restore_command = [
+210            "pg_restore",
+211            "-h", db_host,
+212            "-p", db_port,
+                                                              11
+  213                 "-U", db_user,
+  214                 "-d", db_name,
+  215                 "-c",
+  216                 backup_file
+  217          ]
+  218          print(f"Restore command: {' '.join(restore_command)}")
+  219
+  220          try:
+  221                 result = subprocess.run(
+  222                     restore_command,
+  223                     env=env,
+  224                     stdout=subprocess.PIPE,
+  225                     stderr=subprocess.PIPE,
+  226                     text=True,
+  227                     check=True
+  228                 )
+  229              print(f"Restore completed. stdout: {result.stdout},
+           stderr: {result.stderr}")
+  230              return {"message": "Database restored
+           successfully", "details": result.stdout}
+  231          except subprocess.CalledProcessError as e:
+  232              print(f"Error during restore. stdout: {e.stdout},
+           stderr: {e.stderr}")
+  233                 raise HTTPException(
+  234                     status_code=500,
+  235                     detail={
+  236                         "error": "Restore failed",
+  237                         "stdout": e.stdout,
+  238                         "stderr": e.stderr
+  239                     }
+  240                 )
+  241
+242 app.include_router(admin_router)
+12
+
